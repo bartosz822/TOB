@@ -16,7 +16,8 @@ import System.Time
 server = "irc.freenode.org"
 port   = 6667
 chan   = "#BRbotTesting"
-nick   = "BRBOT"
+nick   = "TOBbot"
+password = "tob12345"
 
 -- The 'Net' monad, a wrapper over IO, carrying the bot's immutable config.
 type Net = ReaderT Config IO
@@ -49,6 +50,7 @@ run = do
     write "NICK" nick
     write "USER" (nick++" 0 * :tutorial bot")
     write "JOIN" chan
+    write "/msg NickServ identify" password
     asks socket >>= listen
 
 -- Process each line from the server
@@ -57,12 +59,11 @@ listen h = forever $ do
     s <- init `fmap` liftIO (hGetLine h)
     liftIO (putStrLn s)
     if ping s then pong s else eval (clean s)
-  where
-    forever a = a >> forever a
-    clean     = drop 1 . dropWhile (/= ':') . drop 1
-    ping x    = "PING :" `isInfixOf` x
-    pong x    = write  "PONG"  (':' : dropWhile( (/=) ':') x)
-
+    where
+        forever a = a >> forever a
+        clean     = drop 1 . dropWhile (/= ':') . drop 1
+        ping x    = "PING" `isPrefixOf` x
+        pong x    = write  "PONG"  (drop 4 x)
 -- Parsing commands and running them
 eval :: String -> Net ()
 eval     "!quit"               = write "QUIT" ":Exiting" >> liftIO (exitWith ExitSuccess)
@@ -98,5 +99,5 @@ pretty td =
 write :: String -> String -> Net ()
 write s t = do
     h <- asks socket
-    liftIO $ hPrintf h "%s %s\r\n" s t
-
+    liftIO $ hPutStr h $ s ++ " " ++ t ++ "\r\n"
+    liftIO $ putStrLn  $ s ++ " " ++ t
