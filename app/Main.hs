@@ -16,11 +16,11 @@ import System.Time
 server = "irc.freenode.org"
 port   = 6667
 chan   = "#BRbotTesting"
-nick   = "BRbot"
+nick   = "BRBOT"
 
--- The 'Net' monad, a wrapper over IO, carrying the bot's immutable state.
-type Net = ReaderT Bot IO
-data Bot = Bot { socket :: Handle, starttime :: ClockTime }
+-- The 'Net' monad, a wrapper over IO, carrying the bot's immutable config.
+type Net = ReaderT Config IO
+data Config = Config { socket :: Handle, starttime :: ClockTime }
 
 -- Set up actions to run on start and end, and run the main loop
 main :: IO ()
@@ -30,12 +30,12 @@ main = bracket connect disconnect loop
     loop st    = runReaderT run st
 
 -- Connect to the server and return the initial bot state
-connect :: IO Bot
+connect :: IO Config
 connect = notify $ do
     t <- getClockTime
-    h <- connectTo server (PortNumber (fromIntegral port))
+    h <- connectTo server (PortNumber port)
     hSetBuffering h NoBuffering
-    return (Bot h t)
+    return (Config h t)
   where
     notify a = bracket_
         (printf "Connecting to %s ... " server >> hFlush stdout)
@@ -54,25 +54,25 @@ run = do
 -- Process each line from the server
 listen :: Handle -> Net ()
 listen h = forever $ do
-    s <- init `fmap` io (hGetLine h)
-    io (putStrLn s)
+    s <- init `fmap` liftIO (hGetLine h)
+    liftIO (putStrLn s)
     if ping s then pong s else eval (clean s)
   where
     forever a = a >> forever a
     clean     = drop 1 . dropWhile (/= ':') . drop 1
-    ping x    = "PING :" `isPrefixOf` x
-    pong x    = write "PONG" (':' : drop 6 x)
+    ping x    = "PING :" `isInfixOf` x
+    pong x    = write  "PONG"  (':' : dropWhile( (/=) ':') x)
 
--- Dispatch a command
+-- Parsing commands and running them
 eval :: String -> Net ()
-eval     "!quit"               = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
+eval     "!quit"               = write "QUIT" ":Exiting" >> liftIO (exitWith ExitSuccess)
 eval x | "!id " `isPrefixOf` x = privmsg (drop 4 x)
 eval "!uptime" = uptime >>= privmsg
 eval     _                     = return () -- ignore everything else
 
 uptime :: Net String
 uptime = do
-    now  <- io getClockTime
+    now  <- liftIO getClockTime
     zero <- asks starttime
     return . pretty $ diffClockTimes now zero
 
@@ -98,9 +98,5 @@ pretty td =
 write :: String -> String -> Net ()
 write s t = do
     h <- asks socket
-    io $ hPrintf h "%s %s\r\n" s t
-    io $ printf    "> %s %s\n" s t
+    liftIO $ hPrintf h "%s %s\r\n" s t
 
--- Convenience.
-io :: IO a -> Net a
-io = liftIO
