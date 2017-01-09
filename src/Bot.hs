@@ -16,12 +16,14 @@ import           Network
 import           System.Exit
 import           System.IO
 import           System.Time
+import           Stats
 
 server = "irc.freenode.org"
 port   = 6667
 chan   = "#BRbotTesting"
 nick   = "TOBbot"
 password = "tob12345"
+
 
 -- The 'Net' monad, a wrapper over IO, carrying the bot's immutable config.
 type Net = ReaderT Config IO
@@ -40,17 +42,16 @@ connect = notify $ do
         (putStrLn $ "Connecting to" ++ server ++ " ... " )
         (putStrLn "done.")
 
-
 -- We're in the Net monad now, so we've connected successfully
 -- Join a channel, and start processing commands
 
 run :: Net ()
 run = do
     write "NICK" nick
-    write "USER" (nick++" 0 * :tutorial bot")
+    write "USER" (nick++" 0 * :botTOB")
     write "JOIN" chan
-    write "/msg NickServ identify" password
---     liftIO $ hFlush stdout
+--     write "/msg NickServ identify" password
+    liftIO $ hFlush stdout
     asks socket >>= listen
 
 -- Process each line from the server
@@ -70,7 +71,8 @@ listen h = forever $ do
 eval :: String -> Net ()
 eval x           | "!id " `isPrefixOf` x = privmsg (drop 4 x)
                  | "!uptime" `isPrefixOf` x   = uptime >>= privmsg
-                 | "!quit" `isPrefixOf` x = write "QUIT" ":Exiting" >> liftIO exitSuccess
+                 | "!quit" `isPrefixOf` x = privmsg "Good Bye" >> write "QUIT" ":Exiting" >> liftIO exitSuccess
+                 | "!stats" `isPrefixOf` x = privmsg (stats $ drop 7 x)
 eval     _       = return () -- ignore everything else
 
 
