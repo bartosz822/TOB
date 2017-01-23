@@ -1,9 +1,13 @@
+-- Code formatted using stylish Haskell
+
+-- |
+-- = Bot module containg al functions used for running an IRC bot
+
 module Bot
 (
     Net,
     Config,
     socket,
-    handle,
     connect,
     run,
  ) where
@@ -13,10 +17,11 @@ import           Control.Exception
 import           Control.Monad.Reader
 import           Data.List
 import           Network
+import           Stats
 import           System.Exit
 import           System.IO
 import           System.Time
-import           Stats
+import           Weather
 
 server = "irc.freenode.org"
 port   = 6667
@@ -25,11 +30,14 @@ nick   = "TOBbot"
 password = "tob12345"
 
 
--- The 'Net' monad, a wrapper over IO, carrying the bot's immutable config.
+-- | The 'Net' monad, a wrapper over IO, carrying the bot's immutable config.
 type Net = ReaderT Config IO
-data Config = Config { socket :: Handle, starttime :: ClockTime }
+-- | Datatype containing bots configutation
+data Config = Config {
+    socket    :: Handle, -- ^ returns Handle to the socket bot is connected to
+    starttime :: ClockTime }
 
--- Connect to the server and return the initial bot state
+-- | Connect to the server and return the initial bot state
 connect :: IO Config
 connect = notify $ do
     t <- getClockTime
@@ -42,9 +50,8 @@ connect = notify $ do
         (putStrLn $ "Connecting to" ++ server ++ " ... " )
         (putStrLn "done.")
 
--- We're in the Net monad now, so we've connected successfully
--- Join a channel, and start processing commands
 
+-- | Sets bot parameters and
 run :: Net ()
 run = do
     write "NICK" nick
@@ -54,7 +61,7 @@ run = do
     liftIO $ hFlush stdout
     asks socket >>= listen
 
--- Process each line from the server
+-- | Processes each line from the server in a loop
 listen :: Handle -> Net ()
 listen h = forever $ do
     s <-  liftIO (hGetLine h)
@@ -67,12 +74,13 @@ listen h = forever $ do
         pong x    = write  "PONG"  (drop 4 x)
 
 
--- Parsing commands and running them
+-- | Parsing commands and running them
 eval :: String -> Net ()
 eval x           | "!id " `isPrefixOf` x = privmsg (drop 4 x)
                  | "!uptime" `isPrefixOf` x   = uptime >>= privmsg
                  | "!quit" `isPrefixOf` x = privmsg "Good Bye" >> write "QUIT" ":Exiting" >> liftIO exitSuccess
-                 | "!stats" `isPrefixOf` x = privmsg (stats $ drop 7 x)
+                 | "!stats" `isPrefixOf` x =  privmsg (stats $ drop 7 x)
+                 | "!weatherKrk" `isPrefixOf` x = liftIO getWeatherKrk >>= privmsg
 eval     _       = return () -- ignore everything else
 
 
@@ -83,12 +91,12 @@ uptime = do
     zero <- asks starttime
     return . pretty $ diffClockTimes now zero
 
--- Send a privmsg to the current chan + server
+-- | Send a privmsg to the current chan + server
 privmsg :: String -> Net ()
 privmsg s = write "PRIVMSG" (chan ++ " :" ++ s)
 
 
--- Send a message out to the server we're currently connected to
+-- | Send a message out to the server we're currently connected to
 write :: String -> String -> Net ()
 write command text = do
     h <- asks socket
@@ -97,7 +105,7 @@ write command text = do
 
 
 --
--- Pretty print the date in '1d 9h 9m 17s' format
+-- | Pretty print the date in '1d 9h 9m 17s' format
 --
 pretty :: TimeDiff -> String
 pretty td =

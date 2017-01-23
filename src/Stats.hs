@@ -1,12 +1,21 @@
+-- Code formatted using stylish Haskell
+
+-- |
+-- = Stats module used for getting strings statistics
+
 module Stats
   (
     stats
-
   ) where
 
-import qualified Data.Set as S
-import Data.Monoid
+import           Data.Monoid
+import qualified Data.Set    as S
 
+
+-- | Returns statistics for a given string such as :
+--     Words
+--     Different Chars
+--     Different Words
 stats :: String -> String
 stats  = countChars <>  countWords <> differentChars <> differentWords
 
