@@ -14,7 +14,7 @@ import           Data.Time.Calendar
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
 
- -- | retruns current date (year, month, day)
+-- | retruns current date (year, month, day)
 date :: IO Day
 date =  utctDay <$> getCurrentTime
 
@@ -26,6 +26,7 @@ checkHowLong y = do
                 newDate <- parseDate y
                 return $ diffDays (chooseDate newDate) day
 
+-- | returns String with information about date difference
 getDifference :: String -> IO String
 getDifference x = checkHowLong x >>= \y -> case y of
     Nothing ->  return "Nie mamy takiej daty sprobuj: wielkanoc, ferie_zimowe, ferie_letnie, sesja_zimowa, sesja_letnia"
