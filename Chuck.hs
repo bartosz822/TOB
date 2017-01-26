@@ -2,22 +2,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | module used to receive a random Chack Norris quote 
-module Quote
+module Chuck
   (
    getQuote,
-  	jsonURL,
+    jsonURL,
     getJSON,
-	getValue,
+  getValue,
     Quote
   ) where
 
-import 			 Data.Aeson
-import 			 GHC.Generics
+import       Data.Aeson
+import       GHC.Generics
 import           Control.Applicative
 import           Control.Monad
 import qualified Data.ByteString.Lazy as B
 import           Network.HTTP.Conduit (simpleHttp)
-import 			 Data.Version	 
+import       Data.Version  
 
 -- | Chuck Norris quotes url
 jsonURL :: String
@@ -27,7 +27,7 @@ jsonURL = "https://api.chucknorris.io/jokes/random"
 getJSON :: IO B.ByteString
 getJSON = simpleHttp jsonURL
 
-
+-- | Data type containing a quote
 data Quote = Quote {
     value :: String
     } deriving(Show)
@@ -36,9 +36,8 @@ data Quote = Quote {
 -- | In order to use decode function getQuote needs to be a member of FromJSON typeclass.
 instance FromJSON Quote where
     parseJSON (Object v) =
-       	Quote <$>  v .: "value"
+        Quote <$>  v .: "value"
     parseJSON _ = mzero
-
 
 
 -- | Returns string 

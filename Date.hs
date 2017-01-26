@@ -1,3 +1,12 @@
+
+-- | module used to reveive number of days between today and a specyfic date
+module Date(
+	date, 
+	checkHowLong, 
+	parseDate, 
+	chooseDate
+	)where
+
 import Data.Time.Clock
 import Data.Time.Calendar
 import Data.Time
@@ -7,6 +16,7 @@ import Data.Time.Clock.POSIX
 date :: IO Day
 date = getCurrentTime >>= return . utctDay
 
+-- | compute how many days is between two dates
 checkHowLong :: String -> IO (Maybe Integer)
 checkHowLong y = do
 	day <- date
@@ -15,6 +25,7 @@ checkHowLong y = do
 		return $ diffDays (chooseDate newDate) day
 
 
+-- | parse input 
 parseDate :: String -> Maybe Importantdates
 parseDate "wielkanoc" = Just Easter
 parseDate "ferie zimowe" = Just Winterhollidays
@@ -30,9 +41,7 @@ data Importantdates = Easter |
 					 Summerholidays |
  					 Winterhollidays
 
--- | pisze
--- asdasd
--- adsda
+-- | list of possible dates
 chooseDate :: Importantdates -> Day
 chooseDate Easter = fromGregorian 2017 04 16
 chooseDate Startwintersession = fromGregorian 2017 01 28
@@ -41,8 +50,4 @@ chooseDate Summerholidays =  fromGregorian 2017 07 01
 chooseDate Startsummersession = fromGregorian 2017 06 17
 
 
---formatTime :: FormatTime t => TimeLocale -> String -> t -> String
-time = getZonedTime
-
-selectData n x y z = return (addDays n (fromGregorian x y z))
 
