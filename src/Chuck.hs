@@ -1,23 +1,24 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
--- | module used to receive a random Chack Norris quote 
+-- |
+-- = module used to receive a random Chack Norris quote
 module Chuck
   (
    getQuote,
-    jsonURL,
-    getJSON,
-  getValue,
-    Quote
-  ) where
+   jsonURL,
+   getJSON,
+   getValue,
+   Quote
+  )where
 
-import       Data.Aeson
-import       GHC.Generics
 import           Control.Applicative
 import           Control.Monad
+import           Data.Aeson
 import qualified Data.ByteString.Lazy as B
+import           Data.Version
+import           GHC.Generics
 import           Network.HTTP.Conduit (simpleHttp)
-import       Data.Version  
 
 -- | Chuck Norris quotes url
 jsonURL :: String
@@ -40,16 +41,16 @@ instance FromJSON Quote where
     parseJSON _ = mzero
 
 
--- | Returns string 
+-- | Returns string
 -- Because it's downloaded from the internet it's wrapped in IO.
 getQuote :: IO String
-getQuote = let w = decode <$> getJSON :: IO (Maybe Quote) in do
-    value <- getValue <$> w
-    return $ value
+getQuote = let w = decode <$> getJSON :: IO (Maybe Quote) in
+    getValue <$> w
+
 
 -- | Extracts quote from result of decoding JSON
 getValue :: Maybe Quote -> String
-getValue (Just x) = (show . value $ x)
+getValue (Just x) = show . value $ x
 getValue Nothing  =  "Nie udało się odczytać"
 
 

@@ -6,9 +6,9 @@ description:         This doc shows modules used in bot
 homepage:            https://bitbucket.org/epsilon_BR/tob
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author name here
+author:              Bartosz Radzyński @ Małgorzata Stachoń
+maintainer:          radzynskib@gmail.com
+copyright:           2016 Bartosz Radzyński
 category:            Web
 build-type:          Simple
 extra-source-files:  .gitignore
@@ -16,8 +16,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Bot, Stats, Weather
-  build-depends:       base >= 4.7 && < 5, old-time, mtl, network, containers, aeson, bytestring, http-conduit
+  exposed-modules:     Bot, Stats, Weather, Chuck, Date
+  build-depends:       base >= 4.7 && < 5, old-time, mtl, network, containers, aeson, bytestring, http-conduit, time
   default-language:    Haskell2010
 
 executable TOB-exe

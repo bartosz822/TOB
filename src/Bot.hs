@@ -18,16 +18,16 @@ import           Control.Monad.Reader
 import           Data.List
 import           Network
 import           Stats
-import           System.Exit
 import           System.IO
 import           System.Time
 import           Weather
+import           Chuck
+import           Date
 
 server = "irc.freenode.org"
 port   = 6667
-chan   = "#BRbotTesting"
+chan   = "#TOBbotchan"
 nick   = "TOBbot"
-password = "tob12345"
 
 
 -- | The 'Net' monad, a wrapper over IO, carrying the bot's immutable config.
@@ -57,7 +57,6 @@ run = do
     write "NICK" nick
     write "USER" (nick++" 0 * :botTOB")
     write "JOIN" chan
---     write "/msg NickServ identify" password
     liftIO $ hFlush stdout
     asks socket >>= listen
 
@@ -78,13 +77,15 @@ listen h = forever $ do
 eval :: String -> Net ()
 eval x           | "!id " `isPrefixOf` x = privmsg (drop 4 x)
                  | "!uptime" `isPrefixOf` x   = uptime >>= privmsg
-                 | "!quit" `isPrefixOf` x = privmsg "Good Bye" >> write "QUIT" ":Exiting" >> liftIO exitSuccess
                  | "!stats" `isPrefixOf` x =  privmsg (stats $ drop 7 x)
                  | "!weatherKrk" `isPrefixOf` x = liftIO getWeatherKrk >>= privmsg
+                 | "!chuck" `isPrefixOf` x = liftIO getQuote >>= privmsg
+                 | "!until" `isPrefixOf` x = let date = takeWhile (\x -> x `elem` ['a'..'z'] || x == '_') $ drop 7 x
+                                             in liftIO (getDifference date) >>= privmsg >> privmsg date
 eval     _       = return () -- ignore everything else
 
 
-
+-- | returns bot's uptime
 uptime :: Net String
 uptime = do
     now  <- liftIO getClockTime
@@ -116,3 +117,7 @@ pretty td =
         metrics = [(86400,"d"),(3600,"h"),(60,"m"),(1,"s")]
         diffs = filter ((/= 0) . fst) $ reverse $ snd $
                 foldl' merge (tdSec td,[]) metrics
+
+
+
+-- Bot's implementation based on https://wiki.haskell.org/Roll_your_own_IRC_bot
