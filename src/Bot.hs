@@ -1,7 +1,7 @@
 -- Code formatted using stylish Haskell
 
 -- |
--- = Bot module containg al functions used for running an IRC bot
+-- = Bot module containing al functions used for running an IRC bot
 
 module Bot
 (
@@ -51,7 +51,7 @@ connect = notify $ do
         (putStrLn "done.")
 
 
--- | Sets bot parameters and
+-- | Sets bot parameters and listens in a loop for incoming messages
 run :: Net ()
 run = do
     write "NICK" nick
@@ -65,7 +65,6 @@ listen :: Handle -> Net ()
 listen h = forever $ do
     s <-  liftIO (hGetLine h)
     liftIO (putStrLn s)
---     liftIO $ hFlush stdout
     if ping s then pong s else eval (clean s)
     where
         clean     = drop 1 . dropWhile (/= ':') . drop 1
@@ -82,7 +81,7 @@ eval x           | "!id " `isPrefixOf` x = privmsg (drop 4 x)
                  | "!chuck" `isPrefixOf` x = liftIO getQuote >>= privmsg
                  | "!until" `isPrefixOf` x = let date = takeWhile (\x -> x `elem` ['a'..'z'] || x == '_') $ drop 7 x
                                              in liftIO (getDifference date) >>= privmsg >> privmsg date
-eval     _       = return () -- ignore everything else
+eval     _       = return ()
 
 
 -- | returns bot's uptime

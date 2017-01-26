@@ -1,9 +1,14 @@
+-- Code formatted using stylish Haskell
+
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck
 import Stats
+
 {-# ANN module ("HLint: ignore Redundant $"::String) #-}
 {-# ANN module ("HLint: ignore Redundant do"::String) #-}
+
+-- Test written
 
 main :: IO ()
 main = hspec $ do

@@ -1,6 +1,7 @@
+-- Code formatted using stylish Haskell
 
 -- |
--- = module used to reveive number of days between today and a specyfic date
+-- = module used to receive number of days between today and a specific date
 module Date(
         date,
         checkHowLong,
@@ -14,7 +15,7 @@ import           Data.Time.Calendar
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
 
--- | retruns current date (year, month, day)
+-- | returns current date (year, month, day)
 date :: IO Day
 date =  utctDay <$> getCurrentTime
 

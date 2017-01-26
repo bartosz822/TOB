@@ -1,8 +1,10 @@
+-- Code formatted using stylish Haskell
+
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- = module used to receive a random Chack Norris quote
+-- = module used to receive a random Chuck Norris quote
 module Chuck
   (
    getQuote,

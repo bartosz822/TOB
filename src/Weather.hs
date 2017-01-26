@@ -62,11 +62,11 @@ getWeatherKrk = let w = decode <$> getJSON :: IO (Maybe Weather) in do
     tempW <- getTemp <$> w
     pressureW <- getPressure <$> w
     humidityW <- getHumidity <$> w
-    return $ "Pogoda w Krakowie: Temperatura :" ++ tempW ++ " Cisnienie: " ++ pressureW ++ " Wilgotnosc: " ++ humidityW
+    return $ "Pogoda w Krakowie: Temperatura : " ++ tempW ++ " Cisnienie: " ++ pressureW ++ " Wilgotnosc: " ++ humidityW
 
 -- | Extracts temperature information from result of decoding JSON
 getTemp :: Maybe Weather -> String
-getTemp (Just x) = (show . temp $ x) ++ "stopni C"
+getTemp (Just x) = (show . temp $ x) ++ " stopni C"
 getTemp Nothing  = "Nie udało się odczytać"
 
 -- | Extracts pressure information from result of decoding JSON
@@ -77,4 +77,4 @@ getPressure Nothing  = "Nie udało się odczytać"
 -- | Extracts humidity information from result of decoding JSON
 getHumidity :: Maybe Weather -> String
 getHumidity (Just x) = (show . humidity $ x) ++ "%"
-getHumidity Nothing  = "Nie udało się odczytać"
+getHumidity Nothing  = "Nie udało się odczytac"
